@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="mp3gain" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Win32 Release">
+				<Option output="libmp3gain" prefix_auto="0" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="Obj\Release" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-fexceptions" />
+					<Add option="-finline-functions" />
+					<Add option="-UasWIN32DLL" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-D_MBCS" />
+					<Add option="-DHAVE_MEMCPY" />
+					<Add option="-DNOANALYSIS" />
+					<Add option="-DHAVE_STRCHR" />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+				</Linker>
+			</Target>
+			<Target title="Win32 Debug">
+				<Option output="libmp3gain_d" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="Obj\Debug" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-W" />
+					<Add option="-fexceptions" />
+					<Add option="-g" />
+					<Add option="-DWIN32" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_CONSOLE" />
+					<Add option="-D_MBCS" />
+					<Add option="-DHAVE_MEMCPY" />
+					<Add option="-DNOANALYSIS" />
+				</Compiler>
+				<Linker>
+					<Add library="kernel32" />
+					<Add library="user32" />
+					<Add library="gdi32" />
+					<Add library="winspool" />
+					<Add library="comdlg32" />
+					<Add library="advapi32" />
+					<Add library="shell32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="odbc32" />
+					<Add library="odbccp32" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="mp3gain\apetag.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\apetag.h" />
+		<Unit filename="mp3gain\gain_analysis.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\gain_analysis.h" />
+		<Unit filename="mp3gain\id3tag.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\id3tag.h" />
+		<Unit filename="mp3gain\mp3gain.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\mp3gain.h" />
+		<Unit filename="mp3gain\replaygaindll.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\resource.h" />
+		<Unit filename="mp3gain\rg_error.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mp3gain\rg_error.h" />
+		<Unit filename="mpglib\VbrTag.h" />
+		<Unit filename="mpglib\bitstream.h" />
+		<Unit filename="mpglib\common.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\common.h" />
+		<Unit filename="mpglib\config.h" />
+		<Unit filename="mpglib\dct64_i386.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\dct64_i386.h" />
+		<Unit filename="mpglib\decode_i386.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\decode_i386.h" />
+		<Unit filename="mpglib\encoder.h" />
+		<Unit filename="mpglib\huffman.h" />
+		<Unit filename="mpglib\interface.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\interface.h" />
+		<Unit filename="mpglib\lame.h" />
+		<Unit filename="mpglib\layer3.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\layer3.h" />
+		<Unit filename="mpglib\machine.h" />
+		<Unit filename="mpglib\mpg123.h" />
+		<Unit filename="mpglib\mpglib.h" />
+		<Unit filename="mpglib\tabinit.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mpglib\tabinit.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
