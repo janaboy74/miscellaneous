@@ -1,5 +1,7 @@
 # My miscellaneous projects
 
+## XSpeed
+- Windows demo application with GDIPlus and audio handling functions for stationary bicycle.
 ## binaryinterleave
 - Sorting algorithm with threads.
 ## checkspd
