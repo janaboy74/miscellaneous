@@ -17,3 +17,5 @@
 - Check weither the windows exe is 32 or 64 bit.
 ## volfix
 - Simple mp3 volume normalizer for windows with gui.
+##weather-calendar
+- Weather and Calendar app using gtkmm.
