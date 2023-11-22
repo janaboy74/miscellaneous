@@ -1,6 +1,7 @@
 # My miscellaneous projects
 
 ## XSpeed
+![xspeed-screenshot](https://github.com/janaboy74/miscellaneous/assets/54952408/1b8b95cc-5ede-40d1-ae99-8cb648a3c86f)
 - Windows demo application with GDIPlus and audio handling functions for stationary bicycle.
 ## binaryinterleave
 - Sorting algorithm with threads.
@@ -18,4 +19,5 @@
 ## volfix
 - Simple mp3 volume normalizer for windows with gui.
 ## weather-calendar
+![weather-screenshot](https://github.com/janaboy74/miscellaneous/assets/54952408/c1374512-609f-4ac3-b8bf-9c76b2acf31d)
 - Weather and Calendar app using gtkmm.
