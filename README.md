@@ -18,6 +18,8 @@
 - Check weither the windows exe is 32 or 64 bit.
 ## volfix
 - Simple mp3 volume normalizer for windows with gui.
+## SVGGear
+- Create real gears for 3D graphics / printing ( for eg. in Blender ) and also for 2D graphics
 ## weather-calendar
 ![weather-screenshot](https://github.com/janaboy74/miscellaneous/assets/54952408/c1374512-609f-4ac3-b8bf-9c76b2acf31d)
 - Weather and Calendar app using gtkmm.
