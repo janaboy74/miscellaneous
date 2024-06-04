@@ -56,7 +56,7 @@ class svgen{
     std::ofstream ofs;
 public:
     double w,h;
-    svgen( CSTR name , double width, double height, bool enableFillBackground, bool enableViewBox ):ofs( name ) {
+    svgen( CSTR name , double width, double height, bool enableFillBackground, bool enableViewBox, bool center ):ofs( name ) {
         w = width;
         h = height;
         *this << "<svg "
@@ -65,11 +65,19 @@ public:
               << attribute("xmlns", "http://www.w3.org/2000/svg")
               << attribute("version", "1.1")
             ;
-        if( enableViewBox )
-            *this << "viewBox=\"" << -width / 2 << " " << -height / 2 << " " << width << " " << height << "\" ";
-        *this << ">\n";
-        if( enableFillBackground )
-            *this << "<rect x=\"" << -width / 2 << "\" y=\"" << -height / 2 << "\" width=\"" << width << "\" height=\"" << height << "\" fill=\"black\"/>";
+        if( center ) {
+            if( enableViewBox )
+                *this << "viewBox=\"" << -width / 2 << " " << -height / 2 << " " << width << " " << height << "\" ";
+            *this << ">\n";
+            if( enableFillBackground )
+                *this << "<rect x=\"" << -width / 2 << "\" y=\"" << -height / 2 << "\" width=\"" << width << "\" height=\"" << height << "\" fill=\"black\"/>";
+        } else {
+            if( enableViewBox )
+                *this << "viewBox=\"" << 0 << " " << 0 << " " << width << " " << height << "\" ";
+            *this << ">\n";
+            if( enableFillBackground )
+                *this << "<rect x=\"" << 0 << "\" y=\"" << 0 << "\" width=\"" << width << "\" height=\"" << height << "\" fill=\"black\"/>";
+        }
     }
     svgen& operator<<(const std::string &custom)
     {
@@ -400,6 +408,8 @@ void printusage( const char *exename ) {
     cerr << "-r - radius\n";
     cerr << "-d - depth\n";
     cerr << "-c - cogs\n";
+    cerr << "-l - linear( rack )\n";
+    cerr << "-w - rack width increase\n";
     cerr << "-z - zoom\n";
     cerr << "-gt - graphical ratio of top\n";
     cerr << "-gb - graphical ratio of bottom\n";
@@ -419,32 +429,34 @@ void printusage( const char *exename ) {
 #define NCSTEP 6
 #define NCOGS 12
 #define NBEND 0.4
-#define NTOP 13
-#define NBOTTOM 5
+#define NTOP 5
+#define NBOTTOM 13
 #define NCURVE 5
 #define IRADIUS 500
-#define ITSTEP 1
+#define ITSTEP 4
 #define IBSTEP 3
 #define ICSTEP 6
 #define ICOGS 20
 #define IBEND 0.2
-#define ITOP 2
-#define IBOTTOM 6
+#define ITOP 6
+#define IBOTTOM 2
 #define ICURVE 7
 
 int main( int argc, const char **argv )
 {
-    int depth = DEPTH;
-    int zoom = ZOOM;
-    int radius = NRADIUS;
+    float depth = DEPTH;
+    float zoom = ZOOM;
+    float radius = NRADIUS;
     int tstep = NTSTEP;
     int bstep = NBSTEP;
     int cstep = NCSTEP;
     int cogs = NCOGS;
     float bend = NBEND;
-    int top = NTOP;
-    int bottom = NBOTTOM;
-    int curve = NCURVE;
+    float top = NTOP;
+    float bottom = NBOTTOM;
+    float curve = NCURVE;
+    int length = 0;
+    float rackwidth = 1.2;
 
     enum PHASE {
         P_TOP, P_DOWN, P_BOTTOM, P_UP
@@ -454,6 +466,7 @@ int main( int argc, const char **argv )
     bool enableViewBox = false;
     const char *exename = argv[ 0 ];
     string filename;
+    bool bendchanged = false;
     for( int i = 1; i < argc; ++i ) {
         auto arglen = ::strlen( argv[ i ]);
         if( arglen < 1 )
@@ -487,12 +500,12 @@ int main( int argc, const char **argv )
                     break;
                 case 'r':
                     if( argc > i ) {
-                        radius = atol( argv[ ++i ]);
+                        radius = atof( argv[ ++i ]);
                     }
                     break;
                 case 'd':
                     if( argc > i ) {
-                        depth = atol( argv[ ++i ]);
+                        depth = atof( argv[ ++i ]);
                     }
                     break;
                 case 'c':
@@ -504,22 +517,22 @@ int main( int argc, const char **argv )
                     break;
                 case 'z':
                     if( argc > i ) {
-                        zoom = atol( argv[ ++i ]);
+                        zoom = atof( argv[ ++i ]);
                     }
                     break;
                 case 'g': {
                     int len( strlen( argv[ i ] ));
                     if( 3 == len ) {
                         if( !strcmp( argv[ i ], "-gt" ) ) {
-                            val = atol( argv[ ++i ]);
+                            val = atof( argv[ ++i ]);
                             if( val >= 1 )
                                 top = val;
                         } else if( !strcmp( argv[ i ], "-gb" ) ) {
-                            val = atol( argv[ ++i ]);
+                            val = atof( argv[ ++i ]);
                             if( val >= 1 )
                                 bottom = val;
                         } else if( !strcmp( argv[ i ], "-gc" ) ) {
-                            val = atol( argv[ ++i ]);
+                            val = atof( argv[ ++i ]);
                             if( val >= 1 )
                                 curve = val;
                         }
@@ -548,6 +561,17 @@ int main( int argc, const char **argv )
                 case 'b':
                     if( argc > i ) {
                         bend = atof( argv[ ++i ]);
+                        bendchanged = true;
+                    }
+                    break;
+                case 'l':
+                    if( argc > i ) {
+                        length = atol( argv[ ++i ]);
+                    }
+                    break;
+                case 'w':
+                    if( argc > i ) {
+                        rackwidth = atof( argv[ ++i ]);
                     }
                     break;
                 case 'h':
@@ -561,7 +585,21 @@ int main( int argc, const char **argv )
 
     if( !filename.length() )
         filename = "gear.svg";
-    svgen svg( filename.c_str(), 2 * radius * zoom, 2 * radius * zoom, enableFillBackground, enableViewBox );
+
+    if( length ) {
+        radius += depth * rackwidth;
+        if( !bendchanged )
+            bend = 0.6;
+    }
+
+    if( tstep < 2 )
+        tstep = 2;
+    if( bstep < 2 )
+        bstep = 2;
+    if( cstep < 2 )
+        cstep = 2;
+
+    svgen svg( filename.c_str(), length ? length * radius * 2 * M_PI * zoom : 2 * ( radius + depth ) * zoom, length ? 2 * depth * zoom : 2 * ( radius + depth ) * zoom, enableFillBackground, enableViewBox, !length );
     int ALL = top + 2 * curve + bottom;
     //float RES = STEP * COGS;
     float step = 1.f / cogs;
@@ -582,84 +620,157 @@ int main( int argc, const char **argv )
     svg << "<g id=\"gear\">";
     svg << elemStart("polygon points=\"");
 
-    PointF a( 0, DEPTH );
+    PointF a( 0, depth );
     PointF b( 0, 0 );
     PointF ao = a;
-    ao += PointF( 0, -radius * bend );
-    ao = ao.rotate( -2 * curveAngle );
-    ao -= PointF( 0, 2 * radius * bend );
-    ao = ao.rotate( curveAngle );
-    ao += PointF( 0, -radius * bend );
+    ao += PointF( 0, radius * bend );
+    ao = ao.rotate( 2 * curveAngle );
+    ao -= PointF( 0, -2 * radius * bend );
+    ao = ao.rotate( -curveAngle );
+    ao += PointF( 0, radius * bend );
     PointF ai = a;
-    ai += PointF( 0, -radius * bend );
-    ai = ai.rotate( 2 * curveAngle );
-    ai -= PointF( 0, 2 * radius * bend );
-    ai = ai.rotate( -curveAngle );
-    ai += PointF( 0, -radius * bend );
+    ai += PointF( 0, radius * bend );
+    ai = ai.rotate( -2 * curveAngle );
+    ai -= PointF( 0, -2 * radius * bend );
+    ai = ai.rotate( curveAngle );
+    ai += PointF( 0, radius * bend );
 
-    bool first = true;
-    for( int32_t c = 0 ; c < cogs; ++c ) {
-        float ph = 1.f * c / cogs;
-        float dc = d1;
-        float ga = g1;
-        float gp = 0;
-        for( int32_t i = 0 ; i < dc; ++i ) {
-            float subph = 1.f * i / dc;
-            PointF s( 0, depth );
-            s.y -= radius;
-            float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
-            s = s.rotate( angle );
-            svg << point( zoom * s.x, zoom * s.y );
+    if( length == 0 ) {
+        for( int32_t c = 0 ; c < cogs; ++c ) {
+            float ph = 1.f * c / cogs;
+            float dc = d1;
+            float ga = g1;
+            float gp = 0;
+            for( int32_t i = 0 ; i < dc; ++i ) {
+                float subph = 1.f * i / dc;
+                PointF s( 0, depth );
+                s.y += radius;
+                float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                s = s.rotate( angle );
+                svg << point( zoom * s.x, zoom * s.y );
+            }
+            dc = d2 - d1;
+            ga = g2 - g1;
+            gp = g1;
+            for( int32_t i = 0 ; i < dc; ++i ) {
+                float subph = 1.f * i / dc;
+                float fogph = 1 - subph;
+                PointF a ( ai );
+                PointF b ( 0, 0 );
+                a -= PointF( 0, radius * bend );
+                a = a.rotate( -curveAngle * fogph );
+                a += PointF( 0, -2 * radius * bend );
+                a = a.rotate( 2 * curveAngle * fogph );
+                a -= PointF( 0, radius * bend );
+                PointF s = a.split( b, 1 - fogph );
+                s.y += radius;
+                float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                s = s.rotate( angle );
+                svg << point( zoom * s.x, zoom * s.y );
+            }
+            dc = d3 - d2;
+            ga = g3 - g2;
+            gp = g2;
+            for( int32_t i = 0 ; i < dc; ++i ) {
+                float subph = 1.f * i / dc;
+                PointF s( 0, 0 );
+                s.y += radius;
+                float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                s = s.rotate( angle );
+                svg << point( zoom * s.x, zoom * s.y );
+            }
+            dc = d4 - d3;
+            ga = g4 - g3;
+            gp = g3;
+            for( int32_t i = 0 ; i < dc; ++i ) {
+                float subph = 1.f * i / dc;
+                float fogph = subph;
+                PointF a ( ao );
+                PointF b ( 0, 0 );
+                a -= PointF( 0, radius * bend );
+                a = a.rotate( curveAngle * fogph );
+                a += PointF( 0, -2 * radius * bend );
+                a = a.rotate( -2 * curveAngle * fogph );
+                a -= PointF( 0, radius * bend );
+                PointF s = a.split( b, 1 - fogph );
+                s.y += radius;
+                float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                s = s.rotate( angle );
+                svg << point( zoom * s.x, zoom * s.y );
+            }
         }
-        dc = d2 - d1;
-        ga = g2 - g1;
-        gp = g1;
-        for( int32_t i = 0 ; i < dc; ++i ) {
-            float subph = 1.f * i / dc;
-            float fogph = 1 - subph;
-            PointF a ( ai );
-            PointF b ( 0, 0 );
-            a -= PointF( 0, -radius * bend );
-            a = a.rotate( curveAngle * fogph );
-            a += PointF( 0, 2 * radius * bend );
-            a = a.rotate( -2 * curveAngle * fogph );
-            a -= PointF( 0, -radius * bend );
-            PointF s = a.split( b, 1 - fogph );
-            s.y -= radius;
-            float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
-            s = s.rotate( angle );
-            svg << point( zoom * s.x, zoom * s.y );
+    } else  {
+        svg << point( 0, 0 );
+        for( int l = 0; l < length; ++l ) {
+            for( int32_t c = 0 ; c < cogs; ++c ) {
+                float ph = 1.f * c / cogs;
+                float dc = d1;
+                float ga = g1;
+                float gp = 0;
+                for( int32_t i = 0 ; i < dc; ++i ) {
+                    float subph = 1.f * i / dc;
+                    PointF s( 0, depth );
+                    s.y += depth;
+                    float forw = 2 * M_PI * radius * ( l + ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                    s.x += forw;
+                    svg << point( zoom * s.x, zoom * s.y );
+                }
+                dc = d2 - d1;
+                ga = g2 - g1;
+                gp = g1;
+                for( int32_t i = 0 ; i < dc; ++i ) {
+                    float subph = 1.f * i / dc;
+                    float fogph = 1 - subph;
+                    PointF a ( ai );
+                    PointF b ( 0, 0 );
+                    a -= PointF( 0, radius * bend );
+                    a = a.rotate( -curveAngle * fogph );
+                    a += PointF( 0, -2 * radius * bend );
+                    a = a.rotate( 2 * curveAngle * fogph );
+                    a -= PointF( 0, radius * bend );
+                    PointF s = a.split( b, 1 - fogph );
+                    s.y += depth;
+                    float forw = 2 * M_PI * radius * ( l + ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                    s.x += forw;
+                    svg << point( zoom * s.x, zoom * s.y );
+                }
+                dc = d3 - d2;
+                ga = g3 - g2;
+                gp = g2;
+                for( int32_t i = 0 ; i < dc; ++i ) {
+                    float subph = 1.f * i / dc;
+                    PointF s( 0, 0 );
+                    s.y += depth;
+                    float forw = 2 * M_PI * radius * ( l + ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                    s.x += forw;
+                    svg << point( zoom * s.x, zoom * s.y );
+                }
+                dc = d4 - d3;
+                ga = g4 - g3;
+                gp = g3;
+                for( int32_t i = 0 ; i < dc; ++i ) {
+                    float subph = 1.f * i / dc;
+                    float fogph = subph;
+                    PointF a ( ao );
+                    PointF b ( 0, 0 );
+                    a -= PointF( 0, radius * bend );
+                    a = a.rotate( curveAngle * fogph );
+                    a += PointF( 0, -2 * radius * bend );
+                    a = a.rotate( -2 * curveAngle * fogph );
+                    a -= PointF( 0, radius * bend );
+                    PointF s = a.split( b, 1 - fogph );
+                    s.y += depth;
+                    float forw = 2 * M_PI * radius * ( l + ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
+                    s.x += forw;
+                    svg << point( zoom * s.x, zoom * s.y );
+                }
+            }
         }
-        dc = d3 - d2;
-        ga = g3 - g2;
-        gp = g2;
-        for( int32_t i = 0 ; i < dc; ++i ) {
-            float subph = 1.f * i / dc;
-            PointF s( 0, 0 );
-            s.y -= radius;
-            float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
-            s = s.rotate( angle );
-            svg << point( zoom * s.x, zoom * s.y );
-        }
-        dc = d4 - d3;
-        ga = g4 - g3;
-        gp = g3;
-        for( int32_t i = 0 ; i < dc; ++i ) {
-            float subph = 1.f * i / dc;
-            float fogph = subph;
-            PointF a ( ao );
-            PointF b ( 0, 0 );
-            a -= PointF( 0, -radius * bend );
-            a = a.rotate( -curveAngle * fogph );
-            a += PointF( 0, 2 * radius * bend );
-            a = a.rotate( 2 * curveAngle * fogph );
-            a -= PointF( 0, -radius * bend );
-            PointF s = a.split( b, 1 - fogph );
-            s.y -= radius;
-            float angle = 360 * ( ph + 1.f * gp / g4 / cogs + subph * ga / g4 / cogs );
-            s = s.rotate( angle );
-            svg << point( zoom * s.x, zoom * s.y );
-        }
+        PointF s( 0, 2 * depth );
+        float forw = 2 * M_PI * radius * ( length );
+        s.x += forw;
+        svg << point( zoom * s.x, zoom * s.y );
+        svg << point( zoom * s.x, 0.f );
     }
     svg << "\" fill=\"white\" />";
     svg << "</g>";
