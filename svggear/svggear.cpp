@@ -590,6 +590,9 @@ int main( int argc, const char **argv )
         radius += depth * rackwidth;
         if( !bendchanged )
             bend = 0.6;
+    } else {
+        top *= ( radius + depth / 2 ) / radius;
+        bottom *= ( radius + depth - 2 ) / radius;
     }
 
     if( tstep < 2 )
