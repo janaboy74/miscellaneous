@@ -416,6 +416,8 @@ protected:
     bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override{
         mutexLocker lock( weather_mutex );
 
+        areas.clear();
+
         Gtk::Allocation allocation = get_allocation();
         const int widget_width = allocation.get_width();
         const int widget_height = allocation.get_height();
@@ -454,6 +456,7 @@ protected:
                 localtime_r( &rawtime, &timeinfo );
                 curdate.year = timeinfo.tm_year + 1900;
                 curdate.month = timeinfo.tm_mon + 1;
+                selected_day = 0;
             } else if( event.first.begins( "day." )) {
                 string str = event.first;
                 str.erase( 0, 4 );
